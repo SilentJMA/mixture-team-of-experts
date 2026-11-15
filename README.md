@@ -14,7 +14,7 @@ flowchart TB
     F --> D
     L --> D
     M --> D
-    D --> I["Integrate & verify<br/>conflicts resolved by orchestrator<br/>deliverable → expert mapping"]
+    D --> I["Integrate & verify<br/>~70% weight on runtime proof<br/>artifact → claim mapping"]
 ```
 
 - **Experts are bounded contexts.** Each one owns a domain, speaks its own language,
@@ -26,6 +26,12 @@ flowchart TB
 - **Structure follows [mattpocock/skills](https://github.com/mattpocock/skills)**:
   one user-invoked orchestrator, a library of model-invoked expert archetypes,
   plain markdown you can hack on.
+- **Verification-first (high-trust).** The trust pyramid is inverted: deterministic
+  code constraints (lint rules, AST analyzers, type bans) outrank prose; experts
+  execute their changes in a runtime/sandbox and return **verification artifacts**
+  — test-runner outputs, CLI feature-map traces, property-based UI test logs,
+  statechart visualizations — not text summaries. Justification prose never lifts
+  a ban: violations fail and escalate.
 
 ## Install
 
@@ -64,8 +70,8 @@ flowchart LR
 1. **Triage** — goal, deliverable type, risk domains, constraints (asks up to 3 questions if vague).
 2. **Compose** — the smallest team (2–5 experts) that covers the risk domains; each expert gets a bounded context.
 3. **Charter** — a `team-charter.md` (roster, interfaces, execution waves, verification). **You approve it before anything spawns.**
-4. **Delegate** — one subagent per expert, each seeing only its archetype + charter slice; independent experts run in parallel.
-5. **Integrate** — deliverables checked against the charter, conflicts resolved by the orchestrator, every artifact traced to its accountable expert.
+4. **Delegate** — one subagent per expert, each seeing only its archetype + charter slice; independent experts run in parallel; every change is executed in a runtime/sandbox and returned with verification artifacts.
+5. **Integrate** — hardened gate: ~70% of evaluation on the runtime proof (re-run where cheap), ~30% on interface consistency; conflicts resolved by the orchestrator; every deliverable traced to its expert **and** its verification artifact.
 
 ## The roster
 

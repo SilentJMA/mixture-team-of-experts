@@ -36,6 +36,7 @@ Three sources ground the design:
 - A **team charter** document as the deterministic, user-approved artifact of the composition step.
 - Composability: after charter approval, the orchestrator may hand implementation work to existing skills (`writing-plans`, `subagent-driven-development`, `tdd`, `code-review`).
 - **Companion-skill routing**: specific experts route deep, specialized work to two installed companion skills — Cloudflare's `security-audit` skill for codebase security audits, and REA (`reverse-engineer-anything`) for reverse-engineering a similar application to implement a similar feature.
+- **Verification-driven delivery** (revision 2): deterministic code constraints and runtime verification artifacts take precedence over markdown rules and text handoffs; justification text never substitutes for proof.
 
 ### Out of scope (v1)
 
@@ -168,7 +169,7 @@ The README documents all three paths and links the source material.
 
 ## Expert archetype shape
 
-Each file in `experts/` follows the ospeks four-layer anatomy expressed as markdown:
+Each file in `experts/` follows the ospeks four-layer anatomy expressed as markdown, with the **trust pyramid inverted** (revision 2): deterministic constraints first, runtime verification second, prose last.
 
 ```md
 ---
@@ -178,16 +179,19 @@ delegates: false        # true only if this expert may spawn its own sub-subagen
 ---
 # Role & life objective
 <What this expert optimizes for. Specific enough to say what it refuses.>
-# Boundaries
-<Explicit "does NOT touch" list — the permission boundary in prose.>
-# Ubiquitous language
-<Terms this domain owns, with one-line definitions.>
-# Context contract
-<What context it may request; what it must not read.>
-# Deliverables
-<Artifact shapes it returns, with acceptance criteria.>
-# Quality bar
-<Checks it must run before returning (builds, tests, lint, self-review).>
+# Deterministic Constraints      ← MANDATORY (layer 1)
+<Lint rules / AST analyzers / type constraints / CI gates — each naming the
+anti-pattern it bans and its enforcement point. Error-level, never warnings.>
+# Verification Artifacts         ← MANDATORY (layer 2)
+<Runtime-executed proof returned with every deliverable: test-runner output,
+CLI feature-map trace, property-based UI test log, statechart visualization.
+Pass criteria and re-runnability stated. Plain snippets/summaries are not deliverables.>
+# Boundaries                     ← explicit "does NOT touch" list
+# Ubiquitous language            ← terms this domain owns
+# Context contract               ← what it may request; what it must not read
+# Deliverables                   ← each paired with its verification artifact
+# Violation Protocol             ← anti-workaround rule: fail, state factually, escalate
+# Quality bar                    ← executed checks, not asserted ones
 ```
 
 ## Companion skill integrations
@@ -237,3 +241,32 @@ The skill itself is verified by use:
 - **Approach B (optional)**: generate harness-native agent configs from the charter for enforced tool scoping.
 - **Approach C (optional)**: pin frequent teams as native specialist agents for zero-composition latency.
 - **Roster growth**: archetypes for research, writing, legal/privacy review, etc. — additive only, per the archetype template.
+
+## Revision 2 — high-trust, verification-driven (SpaceXSI guidelines)
+
+Applied 2026-11-15. Transitions MTOE from prose-only orchestration to a
+verification-driven agent environment. Three changes:
+
+1. **Deterministic code constraints (Phases 1 & 3).** Triage adds a mandatory
+   *deterministic-constraint sweep*: inspect the target codebase and establish or
+   enforce lint rules, AST analyzers, and type constraints that categorically ban
+   known anti-patterns (e.g. direct main↔renderer cross-imports, state-effect-hook
+   misuse). The charter gains a **Deterministic constraints** section and a
+   **Verification plan**; prose-only rules are accepted only with a recorded reason
+   they cannot be enforced.
+2. **Verification artifacts and the hardened gate (Phases 4 & 5).** Delegated
+   subagents execute their changes in a runtime/sandbox environment and return
+   structured **Verification Artifacts** (CLI feature-map traces, test-runner
+   outputs, property-based UI test logs, statechart visualizations) — plain code
+   snippets or text summaries are incomplete deliverables. Phase 5 evaluates
+   deliverables with **~70% of its weight on the runtime proof** (the orchestrator
+   re-runs cheap artifacts itself) and ~30% on text-level interface review.
+3. **Justification-slop ban (all experts).** Subagents are strictly forbidden from
+   writing markdown comments, code documentation, or PR notes that justify
+   architecture violations or quick fixes. A violation means: fail the execution
+   step, state the blocker factually, escalate. A violation "explained" in prose
+   is a failed deliverable.
+
+Underlying ordering — the **inverted trust pyramid**: deterministic code
+constraints > runtime verification artifacts > prose rules, with prose as the
+thinnest top layer.
