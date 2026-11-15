@@ -1,11 +1,11 @@
-# Team-of-Experts Skill — Design
+# Mixture Team of Experts (MTOE) — Skill Design
 
 Date: 2026-11-15
-Status: Draft for review
+Status: Approved for implementation
 
 ## Goal
 
-A user-invoked agent skill (`/team`) that analyzes any user request and turns it into a **composed team of domain-specific experts**, where each expert is a narrowly scoped sub-agent and a single orchestrator delegates, coordinates, and integrates their work — instead of handing the whole request to one general-purpose agent.
+**Mixture Team of Experts (MTOE)** — the name nods to Mixture-of-Experts: instead of one dense general agent, a router composes a small team of specialized experts per request. A user-invoked agent skill (`/mtoe`) that analyzes any user request and turns it into a **composed team of domain-specific experts**, where each expert is a narrowly scoped sub-agent and a single orchestrator delegates, coordinates, and integrates their work — instead of handing the whole request to one general-purpose agent.
 
 ## Motivation and sources
 
@@ -29,7 +29,7 @@ Three sources ground the design:
 
 ### In scope (v1)
 
-- One user-invoked orchestrator skill `SKILL.md` (invoked as `/team`).
+- One user-invoked orchestrator skill `SKILL.md` (invoked as `/mtoe`).
 - A library of **expert archetypes** (markdown files) covering the core engineering domains.
 - The five-phase orchestration loop: Triage → Compose → Charter → Delegate → Integrate.
 - Delegation via the harness's `subagent` facility, one subagent per expert.
@@ -49,13 +49,13 @@ Three sources ground the design:
 The repository follows the standard `skills.sh` layout — a `skills/` directory whose subfolder is the installable unit — so any agent can install it with a one-line command (see *Installation and distribution*):
 
 ```
-team-of-experts/                     # repository root
+team-of-experts/                     # repository root (GitHub: mixture-team-of-experts)
 ├── README.md                        # purpose, install, usage, theory links
 ├── docs/
 │   └── specs/                       # this document
 └── skills/
-    └── team-of-experts/             # the installable skill
-        ├── SKILL.md                 # user-invoked orchestrator (/team)
+    └── mtoe/             # the installable skill
+        ├── SKILL.md                 # user-invoked orchestrator (/mtoe)
         └── experts/                 # model-invoked archetypes (the roster library)
             ├── _TEMPLATE.md         # canonical shape for authoring new experts
             ├── product-strategist.md
@@ -144,13 +144,13 @@ Modeled on mattpocock/skills and cloudflare/security-audit-skill: no build step,
 
 ```bash
 # project-level (editable files copied into the project)
-npx skills add https://github.com/<owner>/team-of-experts --skill team-of-experts
+npx skills add https://github.com/<owner>/mixture-team-of-experts --skill mtoe
 
 # or user-level, available in every project
-npx skills add https://github.com/<owner>/team-of-experts --skill team-of-experts --global
+npx skills add https://github.com/<owner>/mixture-team-of-experts --skill mtoe --global
 ```
 
-**Manual install (no tooling):** copy `skills/team-of-experts/` into the agent's skill directory — e.g. `~/.agents/skills/team-of-experts` (global) or `<project>/.claude/skills/team-of-experts` / `.opencode/skill/` (project-level). The skill has zero dependencies beyond the markdown files.
+**Manual install (no tooling):** copy `skills/mtoe/` into the agent's skill directory — e.g. `~/.agents/skills/mtoe` (global) or `<project>/.claude/skills/mtoe` / `.opencode/skill/` (project-level). The skill has zero dependencies beyond the markdown files.
 
 **Editing after install:** installed files are plain markdown and meant to be hacked on — tune an archetype, delete experts you don't need, or author new ones from `_TEMPLATE.md`. Nothing regenerates or overwrites them.
 
@@ -219,7 +219,7 @@ The skill itself is verified by use:
 2. A delegation round produces one deliverable per expert, each traceable to its charter row.
 3. The final report maps every deliverable to an expert and every expert to a bounded context.
 4. Routing checks: a "security audit" charter row routes through the `security-compliance` expert to the Cloudflare `security-audit` skill's phase workflow; an "analyze app X and build a similar feature" request composes the `reverse-engineer` expert, whose findings artifact feeds the implementing experts.
-5. Install checks: `npx skills add <repo-url> --skill team-of-experts` completes against a fresh checkout, and a manually copied skill folder resolves its `experts/` directory correctly (archetype loading works from a relative path).
+5. Install checks: `npx skills add <repo-url> --skill mtoe` completes against a fresh checkout, and a manually copied skill folder resolves its `experts/` directory correctly (archetype loading works from a relative path).
 6. `README.md` links to all source documents (DDD paper, composition article, mattpocock/skills, security-audit-skill, REA) and explains how to add a new expert archetype.
 
 ## Later extensions
