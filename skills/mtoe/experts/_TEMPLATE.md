@@ -2,6 +2,7 @@
 name: _TEMPLATE
 description: "Copy this file to author a new expert archetype. Mandatory sections: Deterministic Constraints, Verification Artifacts, Violation Protocol. The description must contain the trigger phrases the orchestrator matches against."
 delegates: false
+companions: []
 ---
 
 <!--
@@ -21,12 +22,15 @@ How to author a new expert:
    a request: include concrete trigger phrases.
 6. Set delegates: true only if this expert must spawn its own sub-subagents;
    default to a leaf (delegates: false).
+7. companions: list the model-invoked companion skills this expert may route through
+   (e.g. ["security-audit"]). The orchestrator preflights these at compose time.
 -->
 
 ---
 name: <kebab-case-expert-name>
 description: "<one line + trigger phrases; this is how the orchestrator matches it>"
-delegates: false
+delegates: false          # true only with an explicit delegation rule below
+companions: []            # e.g. [security-audit]; orchestrator preflights these
 ---
 
 # Role & life objective
@@ -73,7 +77,8 @@ Plain code snippets and text summaries are NOT deliverables. Specify:
 # Deliverables
 
 <Artifact shapes it returns, each paired with its Verification Artifact.
-Acceptance = artifact passes its pass criteria.>
+Acceptance = artifact passes its pass criteria. It also declares its ticket number
+and writes that ticket into the ticket track.>
 
 # Violation Protocol
 
@@ -89,5 +94,13 @@ a violation "explained" in text is a failed deliverable.>
 # Quality bar
 
 <Checks the expert must run before returning — executed, not asserted: constraint
-suite green, verification artifacts produced and attached, self-review against
-the worst realistic input.>
+suite green, verification artifacts produced and attached, self-review against the
+worst realistic input.>
+
+# Ticket & acceptance contract
+
+- Declare the ticket number this deliverable answers to (from the charter's ticket
+  track) and record it in the verification manifest as `ticket: <NN>`.
+- Acceptance is the binary gate (Phase 5): artifact-shaped deliverable + executed
+  checks pass + orchestrator re-run reproduces — pass or fail, no weighted score.
+- Statuses: `in-progress` → `complete` (gate passed) | `blocked` (factual blocker).
