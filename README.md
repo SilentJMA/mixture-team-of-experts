@@ -3,18 +3,18 @@
 A coding-agent skill that turns a request into a **team of domain-specific experts**
 and orchestrates them — instead of handing everything to one general-purpose agent.
 
-```
-        your request
-             │
-        ┌────▼─────┐
-        │ orchestrator │   application layer: triage, compose,
-        └────┬─────┘   charter, delegate, integrate
-   ┌─────────┼──────────┬─────────────┐
-   ▼         ▼          ▼             ▼
- backend   frontend   ai/llm     security/rea/…
- expert    expert     expert        experts
-   └─ bounded contexts: narrow context, explicit boundaries,
-      deliverables handed back as artifacts
+```mermaid
+flowchart TB
+    R["Your request"] --> O["Orchestrator — application layer<br/>triage · compose · charter · delegate · integrate"]
+    O -->|"one subagent per expert,<br/>narrow charter slice only"| B["backend-architect<br/>APIs · schema · invariants"]
+    O --> F["frontend-engineer<br/>UI · state · a11y · i18n"]
+    O --> L["ai-llm-engineer<br/>retrieval · prompts · evals"]
+    O --> M["security-compliance · data-engineer<br/>qa-test · reverse-engineer (REA) · …"]
+    B --> D["Deliverables<br/>returned as artifacts, never raw context"]
+    F --> D
+    L --> D
+    M --> D
+    D --> I["Integrate & verify<br/>conflicts resolved by orchestrator<br/>deliverable → expert mapping"]
 ```
 
 - **Experts are bounded contexts.** Each one owns a domain, speaks its own language,
@@ -50,6 +50,16 @@ Invoke `/mtoe` (or just say *"put a team of experts on this"*) with your request
 ```
 
 The orchestrator then runs five phases:
+
+```mermaid
+flowchart LR
+    T["1 · Triage<br/>goal · risks · constraints"] --> C["2 · Compose<br/>2–5 bounded contexts"]
+    C --> H["3 · Charter<br/>roster · interfaces · waves"]
+    H -->|"user approves<br/>(hard gate)"| D["4 · Delegate<br/>parallel subagent waves"]
+    D --> I["5 · Integrate<br/>verify · map deliverables"]
+    H -.->|"rejected → revise"| C
+    I -.->|"conflict → decide or escalate"| H
+```
 
 1. **Triage** — goal, deliverable type, risk domains, constraints (asks up to 3 questions if vague).
 2. **Compose** — the smallest team (2–5 experts) that covers the risk domains; each expert gets a bounded context.

@@ -75,6 +75,16 @@ The archetype library is the editable "team roster": users add, remove, or tune 
 
 ## Orchestrator flow (SKILL.md)
 
+```mermaid
+flowchart LR
+    T["1 · Triage"] --> C["2 · Compose"]
+    C --> H["3 · Charter (hard gate)"]
+    H -->|"user approves"| D["4 · Delegate"]
+    D --> I["5 · Integrate"]
+    H -.->|"rejected → revise"| C
+    I -.->|"conflict → decide or escalate"| H
+```
+
 ### Phase 1 — Triage
 
 Analyze the request to extract:
