@@ -46,26 +46,32 @@ Three sources ground the design:
 
 ## Skill structure
 
+The repository follows the standard `skills.sh` layout — a `skills/` directory whose subfolder is the installable unit — so any agent can install it with a one-line command (see *Installation and distribution*):
+
 ```
-team-of-experts/
-├── SKILL.md                 # user-invoked orchestrator (/team)
-├── README.md                # purpose, install, usage, theory links
+team-of-experts/                     # repository root
+├── README.md                        # purpose, install, usage, theory links
 ├── docs/
-│   └── specs/               # this document
-└── experts/                 # model-invoked archetypes (the roster library)
-    ├── _TEMPLATE.md         # canonical shape for authoring new experts
-    ├── product-strategist.md
-    ├── backend-architect.md
-    ├── frontend-engineer.md
-    ├── ai-llm-engineer.md
-    ├── devops-sre.md
-    ├── security-compliance.md
-    ├── reverse-engineer.md
-    ├── data-engineer.md
-    └── qa-test-engineer.md
+│   └── specs/                       # this document
+└── skills/
+    └── team-of-experts/             # the installable skill
+        ├── SKILL.md                 # user-invoked orchestrator (/team)
+        └── experts/                 # model-invoked archetypes (the roster library)
+            ├── _TEMPLATE.md         # canonical shape for authoring new experts
+            ├── product-strategist.md
+            ├── backend-architect.md
+            ├── frontend-engineer.md
+            ├── ai-llm-engineer.md
+            ├── devops-sre.md
+            ├── security-compliance.md
+            ├── reverse-engineer.md
+            ├── data-engineer.md
+            └── qa-test-engineer.md
 ```
 
 The archetype library is the editable "team roster": users add, remove, or tune experts by editing markdown files. Nothing else needs to change.
+
+`SKILL.md` must resolve its `experts/` directory **relative to its own file location** at run time, so the skill behaves identically whether it was installed globally, per-project, or copied by hand.
 
 ## Orchestrator flow (SKILL.md)
 
@@ -130,6 +136,26 @@ The orchestrator (application layer) then:
 3. Runs verification (checks, builds, tests as applicable — `verification-before-completion` discipline).
 4. Reports with a **deliverable → expert mapping**, so the user can trace every artifact to its accountable expert.
 
+## Installation and distribution
+
+Modeled on mattpocock/skills and cloudflare/security-audit-skill: no build step, no plugin host required — the repo *is* the package, and any agent that understands skills can install it.
+
+**One-line install (skills.sh, any supported agent):**
+
+```bash
+# project-level (editable files copied into the project)
+npx skills add https://github.com/<owner>/team-of-experts --skill team-of-experts
+
+# or user-level, available in every project
+npx skills add https://github.com/<owner>/team-of-experts --skill team-of-experts --global
+```
+
+**Manual install (no tooling):** copy `skills/team-of-experts/` into the agent's skill directory — e.g. `~/.agents/skills/team-of-experts` (global) or `<project>/.claude/skills/team-of-experts` / `.opencode/skill/` (project-level). The skill has zero dependencies beyond the markdown files.
+
+**Editing after install:** installed files are plain markdown and meant to be hacked on — tune an archetype, delete experts you don't need, or author new ones from `_TEMPLATE.md`. Nothing regenerates or overwrites them.
+
+The README documents all three paths and links the source material.
+
 ## Expert archetype shape
 
 Each file in `experts/` follows the ospeks four-layer anatomy expressed as markdown:
@@ -193,7 +219,8 @@ The skill itself is verified by use:
 2. A delegation round produces one deliverable per expert, each traceable to its charter row.
 3. The final report maps every deliverable to an expert and every expert to a bounded context.
 4. Routing checks: a "security audit" charter row routes through the `security-compliance` expert to the Cloudflare `security-audit` skill's phase workflow; an "analyze app X and build a similar feature" request composes the `reverse-engineer` expert, whose findings artifact feeds the implementing experts.
-5. `README.md` links to all source documents (DDD paper, composition article, mattpocock/skills, security-audit-skill, REA) and explains how to add a new expert archetype.
+5. Install checks: `npx skills add <repo-url> --skill team-of-experts` completes against a fresh checkout, and a manually copied skill folder resolves its `experts/` directory correctly (archetype loading works from a relative path).
+6. `README.md` links to all source documents (DDD paper, composition article, mattpocock/skills, security-audit-skill, REA) and explains how to add a new expert archetype.
 
 ## Later extensions
 
