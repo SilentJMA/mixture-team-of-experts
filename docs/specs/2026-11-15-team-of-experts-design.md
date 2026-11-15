@@ -35,6 +35,7 @@ Three sources ground the design:
 - Delegation via the harness's `subagent` facility, one subagent per expert.
 - A **team charter** document as the deterministic, user-approved artifact of the composition step.
 - Composability: after charter approval, the orchestrator may hand implementation work to existing skills (`writing-plans`, `subagent-driven-development`, `tdd`, `code-review`).
+- **Companion-skill routing**: specific experts route deep, specialized work to two installed companion skills — Cloudflare's `security-audit` skill for codebase security audits, and REA (`reverse-engineer-anything`) for reverse-engineering a similar application to implement a similar feature.
 
 ### Out of scope (v1)
 
@@ -59,6 +60,7 @@ team-of-experts/
     ├── ai-llm-engineer.md
     ├── devops-sre.md
     ├── security-compliance.md
+    ├── reverse-engineer.md
     ├── data-engineer.md
     └── qa-test-engineer.md
 ```
@@ -152,6 +154,26 @@ delegates: false        # true only if this expert may spawn its own sub-subagen
 <Checks it must run before returning (builds, tests, lint, self-review).>
 ```
 
+## Companion skill integrations
+
+Two installed companion skills are treated as domain tooling. **Only the orchestrator routes to them, and only through the accountable expert** — an expert may invoke a model-invoked companion skill as part of its own workflow, never a user-invoked skill.
+
+### Security audits → Cloudflare `security-audit` skill
+
+Source: https://github.com/cloudflare/security-audit-skill
+
+- **Trigger**: a charter row for the `security-compliance` expert requires a codebase security audit, vulnerability review, or pen test.
+- **Routing**: the expert produces that deliverable **through** the companion skill's six-phase workflow (reconnaissance → coverage-led hunting → candidate validation → structured output → independent record verification → target-neutral reporting), inheriting its machine-readable findings (`findings.json` verdicts: `confirmed` / `needs_validation` / `rejected`) and its design principles — adversarial validation (the checker is never the finder), severity requires impact, and defense-in-depth gaps are hardening notes, not vulnerabilities.
+- **Mode discipline**: explicit audit/pen-test requests run full audit mode; security *questions* and focused reviews stay in guidance mode. The orchestrator never silently escalates to full audit mode.
+
+### "Build a feature like app X" → REA (`reverse-engineer-anything`)
+
+Source: https://github.com/morluto/rea
+
+- **Trigger**: the user asks to analyze a similar project or application in order to implement a similar feature — the "see a feature you like, understand how it works, build a version for my project" pattern.
+- **Routing**: compose a **`reverse-engineer` expert** (new archetype) whose job is *feature archaeology*: use REA's MCP tools to inspect the target (application behavior, JavaScript/Electron, native binaries, websites, captures) and return **evidence-backed findings** — how the feature works, with the evidence and limitations behind each conclusion. Those findings become a **handoff artifact** consumed by the implementing experts (backend, frontend, ai-llm), who build the version for the user's project. The reverse-engineer expert does not implement.
+- **Boundaries**: only targets the user owns or is authorized to examine (REA's responsible-use position: lawful analysis of your own or authorized software). Findings must cite evidence; unverified conclusions are reported as limitations, not facts. If REA is unavailable for a target type, the expert says so instead of guessing.
+
 ## Failure handling
 
 | Failure | Response |
@@ -161,6 +183,7 @@ delegates: false        # true only if this expert may spawn its own sub-subagen
 | Expert deliverable misses its spec | One corrective follow-up; if still off, orchestrator does the work itself and marks the gap in the report. |
 | Boundary conflict between deliverables | Orchestrator decides using the charter; unresolved conflicts escalate to the user with both options stated. |
 | User rejects charter | Revise composition (add/remove/shrink team) and re-present; nothing spawns until approved. |
+| Companion skill not installed | The accountable expert falls back to its own bounded review and states the gap in its deliverable; the orchestrator notes the missing companion in the report. |
 
 ## Verification
 
@@ -169,7 +192,8 @@ The skill itself is verified by use:
 1. A dry run on a sample request (e.g. "add OAuth login to our app") produces a charter with 2–4 experts, correct boundaries, and a sensible execution plan.
 2. A delegation round produces one deliverable per expert, each traceable to its charter row.
 3. The final report maps every deliverable to an expert and every expert to a bounded context.
-4. `README.md` links to both source documents and explains how to add a new expert archetype.
+4. Routing checks: a "security audit" charter row routes through the `security-compliance` expert to the Cloudflare `security-audit` skill's phase workflow; an "analyze app X and build a similar feature" request composes the `reverse-engineer` expert, whose findings artifact feeds the implementing experts.
+5. `README.md` links to all source documents (DDD paper, composition article, mattpocock/skills, security-audit-skill, REA) and explains how to add a new expert archetype.
 
 ## Later extensions
 
