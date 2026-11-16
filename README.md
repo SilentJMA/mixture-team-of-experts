@@ -120,11 +120,44 @@ Add your own: copy `experts/_TEMPLATE.md` and fill in the six sections (now seve
 including the ticket & acceptance contract). Tune or delete experts by editing the
 files — nothing regenerates or overwrites your edits.
 
-**Per-expert models:** an expert archetype may pin a model in its `model:`
-frontmatter. When it doesn't, the orchestrator right-sizes per bounded context from
-the models available in your setup — the smallest credible model, not the frontier
-by default — and you confirm assignments in the charter's `Model` column
-([AutoGen, arXiv:2310.01905](https://arxiv.org/pdf/2310.01905)).
+## Per-expert models
+
+Model choice is a per-agent property, not a global one
+([AutoGen, arXiv:2310.01905](https://arxiv.org/pdf/2310.01905)): each expert runs on
+the model that fits its bounded context — not the frontier by default.
+
+**Resolution precedence** (Compose phase) — the first match wins:
+
+1. **User preference** — a model you named during Triage for that role.
+2. **Archetype default** — the archetype's optional `model:` frontmatter, shown
+   as-is and never re-recommended (the author's choice stands).
+3. **Right-sized recommendation** — the **smallest available model that can credibly
+   do the bounded context's task**, with a one-line rationale.
+4. **`inherited`** — none of the above: the expert spawns on the harness default.
+
+**Right-sizing tiers:**
+
+| Bounded-context demands | Recommendation |
+|---|---|
+| Narrow, well-specified work — docs, test scaffolding, runbooks, mechanical migrations | smallest/free tier (e.g. 4B–9B) |
+| Standard implementation against already-defined contracts | mid tier (e.g. 9B–38B, cheap hosted) |
+| Architecture & invariants, cross-domain coherence review, ambiguous trade-offs | strongest available |
+
+Recommendations come only from the models your harness actually lists — never
+fabricated. Without a model-listing facility, right-sizing is skipped (archetype
+defaults / `inherited` stand) and the gap is noted in the charter.
+
+**You confirm at the charter gate.** The roster ends `| Ticket | Model |` and carries
+each expert's resolution: an assignment, a right-sized recommendation with one or two
+available alternatives (e.g. `acme/4b-free` — well-specified scaffolding;
+alt: `acme/9b-free`), or `inherited`. Approve roster, boundaries, and model
+assignments together — or name changes. Nothing spawns until approved.
+
+**At spawn**, the resolved model is passed via the harness's native model parameter
+(in OpenCode, `model: "providerID/modelID"`); `inherited` experts spawn without it,
+leaving the harness default untouched. If an assigned model is unavailable (provider
+not connected, bad ID), the expert spawns on the harness default and the run never
+blocks — the final report shows **requested → actual**, so a substitution can't hide.
 
 ## Ticket track
 
