@@ -120,6 +120,12 @@ Add your own: copy `experts/_TEMPLATE.md` and fill in the six sections (now seve
 including the ticket & acceptance contract). Tune or delete experts by editing the
 files — nothing regenerates or overwrites your edits.
 
+**Per-expert models:** an expert archetype may pin a model in its `model:`
+frontmatter. When it doesn't, the orchestrator right-sizes per bounded context from
+the models available in your setup — the smallest credible model, not the frontier
+by default — and you confirm assignments in the charter's `Model` column
+([AutoGen, arXiv:2310.01905](https://arxiv.org/pdf/2310.01905)).
+
 ## Ticket track
 
 Every run is logged, traced, and marked like a real team:
@@ -170,6 +176,7 @@ flags the gap.
 2. *Domain-Specific AI Agents: Why Composition Beats One Big General Agent* (ospeks.com) — the four-layer agent anatomy; scope as permission boundary.
 3. [mattpocock/skills](https://github.com/mattpocock/skills) — user-invoked vs model-invoked skill structure; `to-tickets` for the ticket track.
 4. [mattpocock/skills — to-tickets](https://github.com/mattpocock/skills/blob/main/skills/engineering/to-tickets/SKILL.md) — tracer-bullet tickets, blocking edges, published to the configured tracker.
+5. *AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation* (Wu et al., [arXiv:2310.01905](https://arxiv.org/pdf/2310.01905)) — every agent carries its own `llm_config`; model choice is a per-agent property.
 
 Full design: [`docs/specs/2026-11-15-mtoe-design.md`](docs/specs/2026-11-15-mtoe-design.md).
 

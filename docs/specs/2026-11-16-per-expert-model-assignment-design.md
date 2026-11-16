@@ -1,7 +1,8 @@
-# Per-Expert Model Assignment — MTOE Skill Design (Revision 3)
+# Per-Expert Model Assignment — MTOE Skill Design (Revision 4)
 
 Date: 2026-11-16
-Status: Approved for implementation
+Status: Implemented — integrated with MTOE rev 3 (binary acceptance gates, wave 0,
+ticket track); renumbered Revision 4 in the parent design doc's revision history.
 Parent design: [`2026-11-15-mtoe-design.md`](2026-11-15-mtoe-design.md)
 
 ## Goal
@@ -43,8 +44,8 @@ assignments at the existing charter hard gate.
 - **Delegation**: each subagent spawn receives its resolved model via the harness's
   native model parameter.
 - **Fallback and substitution reporting** when an assigned model is unavailable.
-- Documentation updates: `README.md` (AutoGen as design source #4, one-line feature
-  mention) and a Revision 3 pointer in the parent design doc.
+- Documentation updates: `README.md` (AutoGen among its design sources, one-line feature
+  mention) and a Revision 4 row in the parent design doc's revision history.
 
 ### Out of scope
 
@@ -96,17 +97,17 @@ deterministically):
 |---|---|
 | Narrow, well-specified work: docs, test scaffolding, runbooks, feature-archaeology notes, mechanical migrations | smallest/free tier (e.g. 4B–9B) |
 | Standard implementation against already-defined contracts and interfaces | mid tier (e.g. 9B–38B, cheap hosted) |
-| Architecture and invariants, cross-domain integration lead, ambiguous trade-offs | strongest available |
+| Architecture and invariants, cross-domain coherence review, ambiguous trade-offs | strongest available |
 
-The integrating expert (default `product-strategist`) usually merits the strongest
+The coherence reviewer (`product-strategist`) usually merits the strongest
 available model; leaf experts executing well-specified slices usually do not.
 
 ### 3. Charter (Phase 3) — Model column at the hard gate
 
-The roster table becomes:
+The roster table gains a `Model` column (rev-3 shape, 7 columns):
 
 ```md
-| Expert | Bounded context | Owns | Explicitly not | Deliverables | Model |
+| Expert | Bounded context | Owns | Explicitly not | Deliverable → verification artifact | Ticket | Model |
 ```
 
 The `Model` cell holds the resolved assignment (`inherited` when none), and for
@@ -148,11 +149,11 @@ so the trace stays honest without blocking the run.
 ## Example roster row
 
 ```md
-| Expert | Bounded context | Owns | Explicitly not | Deliverables | Model |
-|---|---|---|---|---|---|
-| backend-architect | API contracts, schema, invariants | ... | ... | contract, migrations | `acme/72b-reasoning` — invariant-heavy architecture work; alt: `acme/frontier` |
-| qa-test-engineer | Test strategy, fixtures | ... | ... | suite + runner output | `acme/4b-free` — well-specified scaffolding; alt: `acme/9b-free` |
-| product-strategist | Integration lead | ... | ... | integration plan | `acme/frontier` — cross-domain trade-offs |
+| Expert | Bounded context | Owns | Explicitly not | Deliverable → verification artifact | Ticket | Model |
+|---|---|---|---|---|---|---|
+| backend-architect | API contracts, schema, invariants | ... | ... | contract, migrations | 02 | `acme/72b-reasoning` — invariant-heavy architecture work; alt: `acme/frontier` |
+| qa-test-engineer | Test strategy, fixtures | ... | ... | suite + runner output | 03 | `acme/4b-free` — well-specified scaffolding; alt: `acme/9b-free` |
+| product-strategist | Scope, priorities, coherence review | ... | ... | scope/priority artifact | 04 | `acme/frontier` — cross-domain trade-offs |
 ```
 
 ## Verification
@@ -168,6 +169,6 @@ The skill is markdown and is verified by use:
    spawn without it.
 4. **Substitution** — an intentionally unavailable assignment yields a harness-default
    spawn and a requested → actual line in the report.
-5. **Docs** — `README.md` lists AutoGen (arXiv:2310.01905) as source #4 with a
-   one-line feature mention; the parent design doc carries a Revision 3 pointer to
-   this spec.
+5. **Docs** — `README.md` lists AutoGen (arXiv:2310.01905) among its design sources
+   with a one-line feature mention; the parent design doc's revision history carries a
+   Revision 4 row pointing to this spec.

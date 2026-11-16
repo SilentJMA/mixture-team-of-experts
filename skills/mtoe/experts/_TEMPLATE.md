@@ -24,6 +24,9 @@ How to author a new expert:
    default to a leaf (delegates: false).
 7. companions: list the model-invoked companion skills this expert may route through
    (e.g. ["security-audit"]). The orchestrator preflights these at compose time.
+8. model: optional — pin a harness model ID (e.g. `providerID/modelID`) only when
+   this domain has a specific capability or cost profile; omit it to let the
+   orchestrator right-size from the user's available models at compose time.
 -->
 
 ---
@@ -31,6 +34,7 @@ name: <kebab-case-expert-name>
 description: "<one line + trigger phrases; this is how the orchestrator matches it>"
 delegates: false          # true only with an explicit delegation rule below
 companions: []            # e.g. [security-audit]; orchestrator preflights these
+model: <optional — harness model ID, e.g. providerID/modelID; omit for harness default>
 ---
 
 # Role & life objective

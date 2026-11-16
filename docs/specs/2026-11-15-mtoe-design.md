@@ -1,7 +1,7 @@
 # Mixture Team of Experts (MTOE) — Skill Design
 
 Date: 2026-11-16
-Status: **Revision 3 — proposed.** Rev 2 approved 2026-11-15. Rev 3 integrates rev 2 into the body and tightens the operational contract. One semantic change needs re-approval: binary acceptance gates replace the 70/30 weighting (§ Phase 5). The per-team folder replaces the flat charter file (§ Skill structure) — cheap to change now, flagged for awareness. Ticket tracking added (§ Ticket track) — additive, does not change phase logic.
+Status: **Revision 3 — proposed.** Rev 2 approved 2026-11-15. Rev 3 integrates rev 2 into the body and tightens the operational contract. One semantic change needs re-approval: binary acceptance gates replace the 70/30 weighting (§ Phase 5). The per-team folder replaces the flat charter file (§ Skill structure) — cheap to change now, flagged for awareness. Ticket tracking added (§ Ticket track) — additive, does not change phase logic. Revision 4 (per-expert model assignment) implemented 2026-11-16.
 
 ## Goal
 
@@ -51,6 +51,7 @@ Four sources ground the design; each contributes load-bearing claims, not vibes.
 - A **team charter** as the deterministic, user-approved artifact of composition, including a **deterministic-constraints table**, a **verification plan**, and **write ownership**.
 - **Ticket track**: a parent ticket plus one ticket per expert deliverable, numbered in dependency order, with blocking edges, status transitions (proposed → in-progress → complete/blocked/rejected), and full traceability to charter rows and verification artifacts.
 - **Verification-driven delivery**: every deliverable ships a re-runnable verification manifest; acceptance is a binary gate, not a score.
+- **Per-expert model assignment** (revision 4): optional `model:` archetype frontmatter; Compose resolves user preference → archetype default → right-sized recommendation → `inherited`; charter `Model` column; spawn-time model parameter; fallback with requested → actual substitution reporting.
 - Composability: after approval, implementation work may hand off to installed model-invoked skills (`writing-plans`, `subagent-driven-development`, `tdd`, `code-review`, `verification-before-completion`) and to the `to-tickets` companion for ticket publication.
 - **Companion routing**: `security-compliance` → Cloudflare `security-audit`; `reverse-engineer` → REA (`reverse-engineer-anything`); `to-tickets` → ticket publication for the whole run.
 
@@ -172,7 +173,7 @@ Status: proposed | approved (<user>, <date>) | superseded
 | 01 | orchestrator | Parent request — charter + team | None | proposed | N/A |
 | 02 | backend-architect | OAuth token exchange | 01 | proposed | artifacts/backend-architect/verification.json |
 ## Roster
-| Expert | Bounded context | Owns | Explicitly not | Deliverable → verification artifact | Ticket |
+| Expert | Bounded context | Owns | Explicitly not | Deliverable → verification artifact | Ticket | Model |
 ## Interfaces
 <producer → consumer, artifact, format>
 ## Deterministic constraints
@@ -271,6 +272,7 @@ name: <kebab-case-expert-name>
 description: <model-facing one-liner + trigger phrases; how the orchestrator matches it>
 delegates: false          # true only with an explicit delegation rule below
 companions: []            # e.g. [security-audit] or [rea]; orchestrator preflights these
+model: <optional — harness model ID, e.g. providerID/modelID; omit for harness default>
 ---
 # Role & life objective
 <What this expert optimizes for. Specific enough to say what it refuses.>
@@ -358,6 +360,8 @@ Stated plainly so the design doesn't oversell itself:
 | Companion unavailable | Preflight catches it; charter records the fallback (expert's own bounded review) and the report states the gap. Runtime disappearance → same fallback, no silent substitution. |
 | Context too large for a prompt | Supply paths via the context contract, never dumps; split the deliverable across waves if needed. |
 | Ticket publication fails | Write tickets locally in `docs/teams/<topic>/tickets/` following the to-tickets template; report the fallback. |
+| Assigned model unavailable at spawn (provider not connected, bad ID) | Spawn on the harness default model and record the substitution; never block the run. The report shows requested → actual. |
+| No model-listing facility in the harness | Skip recommendations; resolve to archetype defaults / `inherited`, note the gap in the charter. |
 
 ## Installation and distribution
 
@@ -407,6 +411,7 @@ The skill is verified by use, against checkable criteria — its own medicine:
 | 1 | 2026-11-15 | Initial design: five phases, charter gate, archetype library, companion routing. |
 | 2 | 2026-11-15 | Verification-driven (SpaceXSI guidelines): constraint sweep, verification artifacts, ~70/30 acceptance weighting, justification-slop ban. |
 | 3 | 2026-11-16 | Rev 2 integrated into the body. **Binary acceptance gates replace 70/30** (prose can't buy back trust). Per-team artifact folder + manifest schema + re-run/flake policy. Wave 0 with baseline and gate self-tests; triage sweep is read-only. Write ownership for parallel experts. Coherence-reviewer split resolves the integrator conflict; no-team exit added. Capability preflight + degraded mode. Trust-model section; companion preflight, output pinning, sandbox honesty, untrusted-content rule. **Ticket track added**: parent ticket + one ticket per expert deliverable, numbered in dependency order with blocking edges, status transitions, and full traceability to charter rows and verification manifests. Corrected EMAS author order, invocation conventions, install flags/paths, and the update-overwrite caveat. |
+| 4 | 2026-11-16 | Per-expert model assignment (AutoGen, arXiv:2310.01905 — every agent carries its own `llm_config`): optional `model:` archetype frontmatter (mechanism only, no baked IDs). Compose resolves each expert's model — user preference → archetype default → right-sized recommendation (smallest credible model from the harness's listed models) → `inherited`. Charter roster `Model` column confirmed at the hard gate; Delegate spawns with the resolved model parameter (`inherited` spawns without it). Unavailable model falls back to the harness default with requested → actual substitution reporting. |
 
 ---
 

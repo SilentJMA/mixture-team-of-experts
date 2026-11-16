@@ -16,7 +16,8 @@ beats one big general agent* (ospeks.com) — the 4-layer anatomy, narrow contex
 the permission boundary; mattpocock/skills — user-invoked orchestrator, model-invoked
 archetypes; SpaceXSI guidelines — deterministic code constraints and execution-driven
 verification artifacts over markdown rules and text handoffs; mattpocock/skills
-`to-tickets` — tracer-bullet ticket track with blocking edges.
+`to-tickets` — tracer-bullet ticket track with blocking edges; AutoGen
+(arXiv:2310.01905) — model choice is a per-agent property.
 
 ## Trust pyramid (inverted)
 
@@ -106,6 +107,15 @@ Create the parent ticket for the whole request in the team folder's `tickets/`
    keeps integration and conflict arbitration. There is no "integrating expert."
 4. For each expert record its bounded context: **Owns / Does not own / Language /
    Deliverables / Depends on / Ticket**.
+5. Resolve each expert's model, in precedence order:
+   - **User preference** — a model the user named during Triage for this role.
+   - **Archetype default** — the archetype's optional `model:` frontmatter; show it
+     as-is and never re-recommend (the archetype author's choice stands).
+   - **Right-sized recommendation** — when neither of the above applies, recommend
+     the **smallest available model that can credibly do the bounded context's
+     task**, with a one-line rationale (see Model discovery and right-sizing).
+   - **Inherited** — when none of the above apply, the expert spawns on the harness
+     default model and the roster says `inherited`.
 
 ### Bounded context fields
 
@@ -117,6 +127,30 @@ Create the parent ticket for the whole request in the team folder's `tickets/`
 | **Deliverables** | Artifact shapes returned, each paired with its verification artifact |
 | **Depends on** | Whose deliverables it consumes |
 | **Ticket** | Ticket number tracking this expert's deliverable |
+| **Model** | Resolved model the expert spawns on — assignment, right-sized recommendation, or `inherited` |
+
+### Model discovery and right-sizing
+
+If the harness exposes a model-listing facility (e.g. a `models` tool or an
+`opencode models` CLI), enumerate the connected models and recommend **only from
+that list** — never fabricate a model name. If it does not, skip discovery silently
+and resolve to archetype defaults / `inherited`, noting the gap in the charter. In
+that case the orchestrator may spend one of its three Triage questions on model or
+cost preference; otherwise all unassigned experts resolve to `inherited` and the
+charter notes that recommendations were unavailable.
+
+Right-sizing guidance (model choice cannot be enforced deterministically — prose
+layer, thinnest by the trust pyramid):
+
+| Bounded-context demands | Recommendation tier |
+|---|---|
+| Narrow, well-specified work: docs, test scaffolding, runbooks, feature-archaeology notes, mechanical migrations | smallest/free tier (e.g. 4B–9B) |
+| Standard implementation against already-defined contracts and interfaces | mid tier (e.g. 9B–38B, cheap hosted) |
+| Architecture and invariants, cross-domain coherence review, ambiguous trade-offs | strongest available |
+
+The coherence reviewer usually merits the strongest available model; leaf experts
+executing well-specified slices usually do not. Model choice is a per-agent
+property, not a global one (AutoGen, arXiv:2310.01905).
 
 ### Compose → ticket track
 
@@ -139,7 +173,7 @@ Status: proposed | approved (<user>, <date>) | superseded
 | 01 | orchestrator | Parent request — charter + team | None | proposed | N/A |
 | 02 | backend-architect | OAuth token exchange | 01 | proposed | artifacts/backend-architect/verification.json |
 ## Roster
-| Expert | Bounded context | Owns | Explicitly not | Deliverable → verification artifact | Ticket |
+| Expert | Bounded context | Owns | Explicitly not | Deliverable → verification artifact | Ticket | Model |
 ## Interfaces
 <producer → consumer, artifact, format>
 ## Deterministic constraints
@@ -163,6 +197,12 @@ the ticket track — wait for approval, revise on rejection. Nothing spawns unti
 approved. Prose-only rules are accepted **only** with a recorded waiver reason in the
 constraints table (P3).
 
+The roster's `Model` column carries each expert's resolved model: an explicit
+assignment, a right-sized recommendation with one or two **available** alternatives
+(e.g. `acme/4b-free` — well-specified scaffolding; alt: `acme/9b-free`), or
+`inherited`. Invite model edits explicitly when presenting the charter: *approve the
+roster, boundaries, and model assignments — or name changes?*
+
 ## Phase 4 — Delegate
 
 **Wave 0 (orchestrator, immediately after approval):**
@@ -185,6 +225,12 @@ constraints table (P3).
 **Nothing else.** Excluded by rule: the user transcript, other experts' prompts or
 reasoning, unrelated files. An expert needing more context requests specific files via
 its context contract; the orchestrator supplies paths or contents.
+
+**Model.** Spawn each subagent with its resolved model via the harness's native model
+parameter (in OpenCode, `model: "providerID/modelID"`). Experts resolved to
+`inherited` spawn **without** the parameter, leaving the harness default unchanged.
+The model is spawn plumbing, not prompt content — the prompt assembly above is
+identical either way.
 
 **Parallelism.** Experts share a wave only if they have no artifact dependency **and**
 disjoint write sets. Overlapping writers are serialized into later waves. Optionally
@@ -264,7 +310,8 @@ Rules:
    (`verification-before-completion` discipline). Green at merge, not green in isolation.
 5. **Report** with full traceability: deliverable → expert → charter row → ticket;
    artifact paths; orchestrator re-run results; waivers; gaps — including any
-   orchestrator-authored fixes, degraded mode, and missing companions.
+   orchestrator-authored fixes, degraded mode, and missing companions, plus the model
+   each expert ran on (**requested → actual** when a substitution occurred).
 
 ## Companion-skill routing
 
@@ -331,6 +378,8 @@ skills — never a user-invoked one, never `/mtoe`.
 | Companion unavailable | Preflight catches it; charter records the fallback (expert's own bounded review) and the report states the gap. Runtime disappearance → same fallback, no silent substitution. |
 | Context too large for a prompt | Supply paths via the context contract, never dumps; split the deliverable across waves if needed. |
 | Ticket publication fails | Write tickets locally under `docs/teams/<topic>/tickets/` per the to-tickets template; report the fallback. |
+| Assigned model unavailable at spawn (provider not connected, bad ID) | Spawn on the harness default model and record the substitution; never block the run. The report shows requested → actual. |
+| No model-listing facility in the harness | Skip recommendations; resolve to archetype defaults / `inherited`, note the gap in the charter, and let the user name models manually at the gate. |
 
 ## Anti-patterns
 
