@@ -34,12 +34,31 @@ Rules are enforced in this order of authority, strongest first:
 A rule that matters becomes a constraint; a deliverable that matters comes with
 execution proof. Justification text never substitutes for either.
 
-## Setup: locating the expert library
+## Setup: locating the expert library and project root
 
 Resolve the `experts/` directory **relative to this file's location** — never against
 the working directory. If `experts/` is missing or empty, say so and stop; do not
 improvise experts from memory unless the user explicitly asks you to author a new
 archetype first (see Failure handling).
+
+### Project root (containment rule)
+
+Resolve the **project root** before any write, in precedence order:
+
+1. The enclosing git repository root of the working directory
+   (`git rev-parse --show-toplevel`).
+2. The working directory itself, when it is an existing project (contains source
+   files or a manifest — e.g. `package.json`, `pyproject.toml`, `Cargo.toml`) and is
+   not the home directory.
+3. **No project available** — create one: a kebab-case folder named from the request
+   topic (e.g. `python-tetris-neo-colors/`) in the working directory, and treat it as
+   the project root for everything that follows.
+
+**All MTOE writes stay inside the project root** — the team folder
+`<project-root>/docs/teams/<YYYY-MM-DD>-<topic>/`, tickets, artifacts, and every
+expert's deliverables included. Never write into the home directory, parent
+directories, or anywhere outside the resolved root. State the resolved root (and that
+you created it, when you did) before the charter gate.
 
 ## Phase 1 — Triage
 
@@ -161,8 +180,9 @@ ticket, blocked by all expert tickets.
 
 ## Phase 3 — Charter (hard gate)
 
-Write the charter to `docs/teams/<YYYY-MM-DD>-<topic>/charter.md` in the current
-working repository by default, or to any path the user names:
+Write the charter to `<project-root>/docs/teams/<YYYY-MM-DD>-<topic>/charter.md`
+(see the Setup containment rule for how the project root resolves), or to any path
+the user names:
 
 ```md
 # Team Charter: <request title>
@@ -323,7 +343,7 @@ skills — never a user-invoked one, never `/mtoe`.
   - **Trigger**: at charter approval, the orchestrator uses `to-tickets` to publish the
     charter's work as tickets, or writes them locally per the to-tickets template.
   - **Local tracker**: one file per ticket under `.scratch/<feature-slug>/issues/<NN>-<slug>.md`,
-    numbered `01`… in dependency order; MTOE mirrors into `docs/teams/<YYYY-MM-DD>-<topic>/tickets/`.
+    numbered `01`… in dependency order; MTOE mirrors into `<project-root>/docs/teams/<YYYY-MM-DD>-<topic>/tickets/`.
   - **Real tracker**: one issue per ticket, blockers first, native blocking links where
     available, `ready-for-agent` triage label.
   - **Blocking edges**: derived from charter `Depends on` / write ownership.
@@ -377,7 +397,8 @@ skills — never a user-invoked one, never `/mtoe`.
 | User rejects charter | Revise and re-present; nothing spawns, nothing mutates. |
 | Companion unavailable | Preflight catches it; charter records the fallback (expert's own bounded review) and the report states the gap. Runtime disappearance → same fallback, no silent substitution. |
 | Context too large for a prompt | Supply paths via the context contract, never dumps; split the deliverable across waves if needed. |
-| Ticket publication fails | Write tickets locally under `docs/teams/<topic>/tickets/` per the to-tickets template; report the fallback. |
+| Ticket publication fails | Write tickets locally under `<project-root>/docs/teams/<topic>/tickets/` per the to-tickets template; report the fallback. |
+| No project folder (invoked from the home directory or an empty one) | Create a kebab-case project folder named from the request topic, resolve it as the project root, and write everything inside it — never loose into the home directory. |
 | Assigned model unavailable at spawn (provider not connected, bad ID) | Spawn on the harness default model and record the substitution; never block the run. The report shows requested → actual. |
 | No model-listing facility in the harness | Skip recommendations; resolve to archetype defaults / `inherited`, note the gap in the charter, and let the user name models manually at the gate. |
 
@@ -395,5 +416,8 @@ skills — never a user-invoked one, never `/mtoe`.
   escalate — they never get explained into acceptability.
 - **Do not** state a rule in prose when a lint rule, AST check, or type constraint
   could enforce it.
+- **Do not** write outside the project root — no `docs/teams/` scattered in the home
+  directory. When no project exists, create a properly named project folder and work
+  inside it.
 - **Do not** mark a ticket `complete` without a passing verification manifest and
   orchestrator re-run. Status is factual, not aspirational.
