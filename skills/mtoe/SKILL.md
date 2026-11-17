@@ -124,7 +124,7 @@ wave 0: baseline + gates · wave 1: independent experts · wave 2+: dependents �
 <subagent mode: parallel | sequential | degraded; companions available + mode; tool commands>
 
 ## Integration & acceptance
-<merge order; conflict arbitration rules; binary acceptance gate>
+<merge order; conflict arbitration rules; binary acceptance gate; fresh-eyes review pass>
 
 ## Approval
 <user, date — recorded before Wave 0 or any expert spawn>
@@ -210,12 +210,13 @@ wave 0: baseline + gates · wave 1: independent experts · wave 2+: dependents �
   "blockers": []
 }
 ```
-Scrub any secrets or tokens from logs and `verification.json`.
+Scrub any secrets or tokens from logs and `verification.json`. A check that cannot execute (tool missing, timeout, empty result) goes in `blockers` and is reported `not run` — a missing result is never a pass.
+5. **Review responses**: when your deliverable is reviewed, treat `PROPOSE FIX` findings as precise edits. Contest one only with evidence the reviewer could have read (a file, symbol, or charter row) — a wish to contest is not evidence. Stress-test your own work before returning: critique first, no glazing, no apologies.
 ````
 
-**Degraded sequential mode**: if the harness lacks a subagent tool, execute experts sequentially in-context with a strict context firewall — load one archetype and charter slice at a time, write its deliverable and `verification.json`, and complete its gate check before loading the next expert. Disclose degraded mode in the charter and final report.
+**Degraded sequential mode**: if the harness lacks a subagent tool, execute experts sequentially in-context with a strict context firewall — load one archetype and charter slice at a time, write its deliverable and `verification.json`, and complete its gate check before loading the next expert. The fresh-eyes review runs only if a separate clean context is possible; otherwise record it `not run` in the report. Disclose degraded mode in the charter and final report.
 
-**Completion criterion**: Every wave has run in dependency order, ticket statuses reflect current execution state, and every expert has written its deliverables and `artifacts/<expert>/verification.json`.
+**Completion criterion**: Every wave has run in dependency order, ticket statuses reflect current execution state, every expert has written its deliverables and `artifacts/<expert>/verification.json`, and no check or reviewer is silently missing — anything that did not execute is recorded `not run`.
 
 ---
 
@@ -227,16 +228,36 @@ Scrub any secrets or tokens from logs and `verification.json`.
    - **Orchestrator re-run**: re-execute every check marked `Orchestrator re-runs? = yes` in the charter (at least one deterministic check per deliverable) and confirm it reproduces `exit_code: 0`. (If a check is flaky, allow at most one re-run; if still inconsistent, mark failed.)
    - Zero unwaived deterministic constraint violations and zero justification comments/workarounds (`@ts-ignore`, `eslint-disable`, etc.).
    - `git diff` confirms all modified files fall strictly inside the expert's charter write ownership globs.
-2. **One corrective round maximum**: if any condition fails, keep the ticket `in-progress` and run at most **one** corrective round (resume the expert's subagent session with the exact failure output, or spawn one corrective subagent with the prior deliverable + delta brief). If still failing after one corrective round:
+2. **Fresh-eyes review (Goldfish pass)**: spawn **one read-only reviewer subagent in a fresh context** for the run (document loops re-spawn a fresh reviewer each round — fresh reviewers sample differently — but still never one per deliverable). Its input is **only** the charter rows plus the deliverable artifacts on disk — never the conversation transcript, expert reasoning, or drafting history. The reviewer must:
+   - **Paraphrase first** (document deliverables): write *What this deliverable does* and *How it works, per the artifacts* (2–5 sentences each) before listing findings; a wrong paraphrase is itself a finding — a list of defined terms does not find a deliverable whose parts do not connect.
+   - Flag unstated assumptions, comprehension gaps (undefined project-specific terms, hand-waved mechanics), and interface or boundary misfits against the charter.
+   - Stress-test by default: critique first, no glazing, no apologies, strongest counter-argument required; agreement must be earned.
+   - Rate each finding 🔴 Blocker / 🟡 Major / 🟢 Nit with a stable round-scoped id (`fresheyes-<round>-<n>`) and exact scope (file:line or charter row).
+   - A fresh-eyes review is a prose-layer instrument (trust-pyramid layer 3): it never substitutes for runtime proof. If no subagent facility exists, record the review `not run` — a same-context skim is not a fresh-eyes review.
+3. **Resolve findings and run corrective rounds**: classify every failed gate condition and fresh-eyes finding into exactly one resolution:
+   - `PROPOSE FIX` — valid; define the precise edit and route it to the responsible expert.
+   - `CONTEST` — critique inaccurate; **must cite evidence the reviewer could have read** (a file, symbol, or charter row). "I wrote the deliverable" is not evidence.
+   - `ESCALATE` — evidence lives outside every file the reviewer could reach (team convention, verbal decision); needs the user's knowledge — present to the user.
+   - `DECLINE` — Nit; record it without fixing.
+   
+   For **code deliverables**, run at most **one** corrective round (resume the expert's subagent session with the exact failure output, or spawn one corrective subagent with the prior deliverable + delta brief). For **document deliverables**, the user may opt into an iterative fresh-eyes loop with convergence semantics:
+   - A **settled** finding (contested or recorded accepted risk) is never re-opened.
+   - A **fixed** finding that reappears at the same scope means the fix failed — **re-open** it.
+   - A **clean round** has no unsettled 🔴/🟡 findings and no `not run` reviewers.
+   - **Converged** = two consecutive clean rounds. **Cap** = 5 rounds. **Churn** (a new finding at the scope of an applied fix whose revert would resolve it) → ask the user: accept and proceed, continue past the cap, or return to drafting.
+   
+   If a code deliverable still fails after its corrective round:
    - Mark the ticket `blocked`.
    - You (the orchestrator) may patch **only small, mechanical integration gaps** directly — flag them `orchestrator-authored` in the report and subject them to the same verification gates. Escalate larger gaps to the user.
-3. **Arbitrate boundary conflicts**: if two deliverables clash at an interface boundary, decide using the charter's integration rules and coherence matrix (or escalate to the user with both options and a recommendation).
-4. **Final merged verification**: run the full repository check suite and all Wave-0 constraint gates at merged `HEAD`. Mark accepted expert tickets and the parent/integration tickets `complete`.
-5. **Traceability report**: present the final summary containing:
+4. **Arbitrate boundary conflicts**: if two deliverables clash at an interface boundary, decide using the charter's integration rules and coherence matrix (or escalate to the user with both options and a recommendation).
+5. **Final merged verification**: run the full repository check suite and all Wave-0 constraint gates at merged `HEAD`. Mark accepted expert tickets and the parent/integration tickets `complete` — a `not run` fresh-eyes review keeps its tickets from `complete` until the user accepts the recorded disclosure (e.g. degraded mode) or a review completes.
+6. **Traceability report**: present the final summary containing:
    - Deliverable → Expert → Ticket → Status → Model (`requested → actual` if substituted)
    - Verification manifest & log paths + orchestrator re-run results
+   - Fresh-eyes review outcome: findings by severity, their resolutions (`PROPOSE FIX` / `CONTEST` / `ESCALATE` / `DECLINE`), or `not run`
    - Constraint gates added and verified in Wave 0 (plus any approved waivers)
    - Any `orchestrator-authored` fixes, missing companions, or degraded mode disclosures
+   - Offer a post-run **drift check** (charter & specs vs. the implemented code) as a follow-up
 
 ---
 
@@ -253,3 +274,5 @@ Scrub any secrets or tokens from logs and `verification.json`.
 | Expert writes outside owned globs | Revert unauthorized paths and issue 1 corrective round; review diff before merge. |
 | Companion skill/MCP unavailable | Detect at preflight, record fallback in charter (`security-compliance` or `reverse-engineer` runs bounded local review; local tickets replace `to-tickets`), and disclose in report. |
 | Assigned model fails at spawn | Immediately fall back to harness default model; record `requested → actual` in final report. |
+| Fresh-eyes reviewer fails or returns no report | Retry once; if it fails again, record it `not run` — never as "zero findings" — and treat the round as not clean. |
+| Disputed contest on a finding | A contest stands only with evidence the reviewer could have read (file, symbol, charter row); without it, `ESCALATE` to the user or convert to `PROPOSE FIX`. |

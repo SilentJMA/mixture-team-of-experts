@@ -33,7 +33,10 @@ flowchart TB
   test-runner outputs, CLI feature-map traces, property-based UI test logs,
   statechart visualizations — not text summaries. Justification prose never lifts
   a ban: violations fail and escalate. Acceptance is a **binary gate** — not a
-  weighted score — on the execution proof.
+  weighted score — on the execution proof, followed by a **fresh-eyes review**: a
+  read-only reviewer in a clean context (charter + artifacts only, never the run's
+  conversation) paraphrases document deliverables and stress-tests the rest —
+  critique first, no glazing.
 
 ## Install
 
@@ -212,6 +215,7 @@ flags the gap.
 3. [mattpocock/skills](https://github.com/mattpocock/skills) — user-invoked vs model-invoked skill structure; `to-tickets` for the ticket track.
 4. [mattpocock/skills — to-tickets](https://github.com/mattpocock/skills/blob/main/skills/engineering/to-tickets/SKILL.md) — tracer-bullet tickets, blocking edges, published to the configured tracker.
 5. *AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation* (Wu et al., [arXiv:2310.01905](https://arxiv.org/pdf/2310.01905)) — every agent carries its own `llm_config`; model choice is a per-agent property.
+6. [Google — Elephant-Goldfish Model](https://github.com/google/elephant-goldfish-model) — the Elephant drafts with context, fresh-context Goldfish reviewers audit it, the user approves; source of the fresh-eyes review pass, the paraphrase-first comprehension test, the finding/resolution taxonomy, and the not-run accounting rule.
 
 Full design: [`docs/specs/2026-11-15-mtoe-design.md`](docs/specs/2026-11-15-mtoe-design.md).
 
