@@ -183,8 +183,6 @@ Every run is logged, traced, and marked like a real team:
   via the `to-tickets` companion, `ready-for-agent` triage label, native blocking
   links where available.
 
-Full design: [`docs/specs/2026-11-15-mtoe-design.md`](docs/specs/2026-11-15-mtoe-design.md).
-
 ## Companion skills
 
 When installed, MTOE routes specialized work through them — only via the
@@ -216,8 +214,6 @@ flags the gap.
 4. [mattpocock/skills — to-tickets](https://github.com/mattpocock/skills/blob/main/skills/engineering/to-tickets/SKILL.md) — tracer-bullet tickets, blocking edges, published to the configured tracker.
 5. *AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation* (Wu et al., [arXiv:2310.01905](https://arxiv.org/pdf/2310.01905)) — every agent carries its own `llm_config`; model choice is a per-agent property.
 6. [Google — Elephant-Goldfish Model](https://github.com/google/elephant-goldfish-model) — the Elephant drafts with context, fresh-context Goldfish reviewers audit it, the user approves; source of the fresh-eyes review pass, the paraphrase-first comprehension test, the finding/resolution taxonomy, and the not-run accounting rule.
-
-Full design: [`docs/specs/2026-11-15-mtoe-design.md`](docs/specs/2026-11-15-mtoe-design.md).
 
 ## License
 
