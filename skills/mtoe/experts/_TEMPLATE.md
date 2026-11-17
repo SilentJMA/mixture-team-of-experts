@@ -1,6 +1,6 @@
 ---
 name: _TEMPLATE
-description: "Copy this file to author a new expert archetype. Mandatory sections: Deterministic Constraints, Verification Artifacts, Violation Protocol. The description must contain the trigger phrases the orchestrator matches against."
+description: "Copy this file to author a new expert archetype. Mandatory sections: Deterministic Constraints, Verification Artifacts, Boundaries, Ubiquitous language, Context contract, Deliverables, Quality bar."
 delegates: false
 companions: []
 ---
@@ -8,103 +8,74 @@ companions: []
 <!--
 How to author a new expert:
 1. Copy this file to experts/<kebab-case-name>.md.
-2. Replace every placeholder. Be specific: "bans direct main↔renderer imports via
-   an import-graph lint rule" not "follows architecture".
+2. Replace every placeholder with concrete, domain-specific rules and proof.
 3. TRUST PYRAMID — author in this order of authority:
-   Layer 1 · Deterministic Constraints  (code-enforced, categorical)
+   Layer 1 · Deterministic Constraints  (code-enforced, error-level, categorical)
    Layer 2 · Verification Artifacts     (runtime-executed proof)
    Layer 3 · Prose rules                (thinnest layer, last resort)
-   If a rule matters, it belongs in layer 1. If a deliverable matters, it ships
-   with layer 2 proof. Prose never overrides the layers below it.
-4. Boundaries are the permission boundary — an explicit "does NOT touch" list
-   matters as much as the role statement.
+4. Boundaries are the permission boundary — state what this expert owns and what
+   belongs to sibling bounded contexts.
 5. The description frontmatter is how the MTOE orchestrator matches this expert to
-   a request: include concrete trigger phrases.
+   a request: front-load the domain and include distinct trigger terms.
 6. Set delegates: true only if this expert must spawn its own sub-subagents;
    default to a leaf (delegates: false).
-7. companions: list the model-invoked companion skills this expert may route through
-   (e.g. ["security-audit"]). The orchestrator preflights these at compose time.
-8. model: optional — pin a harness model ID (e.g. `providerID/modelID`) only when
-   this domain has a specific capability or cost profile; omit it to let the
+7. companions: list the model-invoked companion skills or MCP servers this expert
+   routes through (e.g. [security-audit], [rea]).
+8. model: optional — pin a harness model ID (e.g. providerID/modelID) only when
+   this domain has a specific capability or cost profile; omit to let the
    orchestrator right-size from the user's available models at compose time.
+9. Shared execution rules (Violation Protocol, verification.json schema, and
+   ticket transitions) live in the orchestrator's subagent dispatch envelope in
+   SKILL.md — do not duplicate them here unless adding domain-specific escalation
+   triggers.
 -->
 
 ---
 name: <kebab-case-expert-name>
-description: "<one line + trigger phrases; this is how the orchestrator matches it>"
+description: "<domain summary>. Triggers: <distinct trigger terms>."
 delegates: false          # true only with an explicit delegation rule below
 companions: []            # e.g. [security-audit]; orchestrator preflights these
-model: <optional — harness model ID, e.g. providerID/modelID; omit for harness default>
+model: <optional — harness model ID, e.g. providerID/modelID; omit for right-sizing>
 ---
 
 # Role & life objective
 
-<What this expert optimizes for. Specific enough to say what it refuses.>
+<What this expert optimizes for, specific enough to define its refusals.>
 
 # Deterministic Constraints
 
-<Layer 1 — the codebase-enforced rules this expert must obey and, where missing,
-establish. Each entry names the mechanism and the anti-pattern it bans:
-
-- **Mechanism**: lint rule / AST analyzer / type constraint / CI gate.
-- **Bans**: the categorical anti-pattern (e.g. direct cross-imports between
-  architectural layers, misuse of state-effect hooks, invariant-breaking casts).
-- **Enforcement point**: config file / plugin / CI job — error-level, never warning.
-
-If this expert's charter row lacks an enforcement point for a rule it depends on,
-that is a charter defect to escalate — not a rule to obey on trust.>
+- **<Rule 1 — e.g. Layer import boundary>**: <mechanism: lint rule / AST check / type constraint / CI gate> — bans <categorical anti-pattern> at error severity.
+- **<Rule 2 — e.g. Domain invariant type safety>**: <mechanism> — bans <anti-pattern>.
+- **Charter gate requirement**: every constraint this domain relies on must appear in the charter's Deterministic Constraints table with an error-level enforcement point or a user-approved waiver. Missing enforcement point → escalate as a charter defect before writing implementation code.
 
 # Verification Artifacts
 
-<Layer 2 — the runtime-executed proof this expert returns with every deliverable.
-Plain code snippets and text summaries are NOT deliverables. Specify:
+Every deliverable ships with executed proof recorded in `artifacts/<expert>/verification.json`:
 
-- **Artifact**: test-runner output / CLI feature-map trace / property-based UI
-  test log / statechart visualization — whichever fits this domain.
-- **Execution environment**: runtime/sandbox where the artifact is produced.
-- **Pass criteria**: what the orchestrator will check in the artifact (exit codes,
-  covered paths, invariants held).
-- **Re-runnability**: the orchestrator must be able to re-run or spot-check it.>
+- **<Deliverable 1>**: <test-runner output / CLI trace / benchmark / schema check> executed in <runtime/sandbox>, passing when <machine-checkable pass criterion: exit 0, 0 failures, invariant assertion count>.
+- **<Deliverable 2>**: <artifact + command + machine-checkable pass criterion>.
 
 # Boundaries
 
-<Explicit "does NOT touch" list — the permission boundary in prose.>
+Owns <explicit domain scope>. Hands <adjacent domain A> to `<expert-a>`, <adjacent domain B> to `<expert-b>`.
 
 # Ubiquitous language
 
-<Terms this domain owns, with one-line definitions.>
+- **<Term 1>** — <one-line definition>.
+- **<Term 2>** — <one-line definition>.
 
 # Context contract
 
-<What context it may request; what it must not read.>
+Requests only: <specific slices, schemas, contracts, or configs needed>. Leaves unrelated feature internals out of context; asks the orchestrator for file paths or slices when blocked.
 
 # Deliverables
 
-<Artifact shapes it returns, each paired with its Verification Artifact.
-Acceptance = artifact passes its pass criteria. It also declares its ticket number
-and writes that ticket into the ticket track.>
-
-# Violation Protocol
-
-<Layer 3 guard — the anti-workaround rule, domain-specific:
-If a Deterministic Constraint cannot be satisfied:
-1. FAIL the execution step. Do not ship the workaround.
-2. State the blocker factually: constraint, file/line, exact conflict.
-3. Escalate through the orchestrator to the user.
-Forbidden: markdown comments, code documentation, or PR notes that justify an
-architecture violation or a quick fix. Justification prose never lifts a ban;
-a violation "explained" in text is a failed deliverable.>
+- **<Deliverable 1>** paired with `<verification check id>`.
+- **<Deliverable 2>** paired with `<verification check id>`.
 
 # Quality bar
 
-<Checks the expert must run before returning — executed, not asserted: constraint
-suite green, verification artifacts produced and attached, self-review against the
-worst realistic input.>
-
-# Ticket & acceptance contract
-
-- Declare the ticket number this deliverable answers to (from the charter's ticket
-  track) and record it in the verification manifest as `ticket: <NN>`.
-- Acceptance is the binary gate (Phase 5): artifact-shaped deliverable + executed
-  checks pass + orchestrator re-run reproduces — pass or fail, no weighted score.
-- Statuses: `in-progress` → `complete` (gate passed) | `blocked` (factual blocker).
+Completion criteria (all executed before returning `status: "complete"`):
+- [ ] All charter-assigned deterministic constraint checks exit `0`.
+- [ ] Every deliverable's verification command has been executed, logs written to `artifacts/<expert>/`, and `verification.json` populated.
+- [ ] <Domain-specific edge-case or adversarial self-check>.

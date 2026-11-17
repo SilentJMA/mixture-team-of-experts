@@ -116,9 +116,11 @@ flowchart LR
 | `data-engineer` | Ingestion, sync/watermarks, dedup, migrations |
 | `qa-test-engineer` | Test strategy, seams, fixtures, regression nets |
 
-Add your own: copy `experts/_TEMPLATE.md` and fill in the six sections (now seven,
-including the ticket & acceptance contract). Tune or delete experts by editing the
-files — nothing regenerates or overwrites your edits.
+Add your own: copy `experts/_TEMPLATE.md` and fill in its sections with concrete
+domain constraints and verification artifacts — or let the orchestrator propose and
+author a new archetype on the fly when your request touches a new domain (confirmed
+with you at the charter gate). Tune or delete experts by editing the files — nothing
+regenerates or overwrites your edits.
 
 ## Per-expert models
 
